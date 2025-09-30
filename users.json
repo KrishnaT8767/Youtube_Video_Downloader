@@ -1,0 +1,33 @@
+{
+    "Krishna": {
+        "password": "$2b$12$FljwpXXSnCWtrmMU.Zr6fO6uBUvAmr7mzgQjKYpG6YqoE1vZYIzTq",
+        "downloads": [
+            "https://youtu.be/2VUDAW5nhxs?si=FSPlQklSVe_Oz3WW",
+            "https://youtu.be/BUNfnDeV0a0?si=_JM-DyhSYUMPsEpP",
+            "https://youtu.be/wh2RFfWBZ7c?si=ZZRBXFEnr2A-Ch_x",
+            "https://youtu.be/2NR92PSaZ-w?si=A0xFWG367ENTLZa5",
+            "https://youtu.be/wh2RFfWBZ7c?si=ZZRBXFEnr2A-Ch_x",
+            "https://youtu.be/BUNfnDeV0a0?si=_JM-DyhSYUMPsEpP",
+            "https://youtu.be/2NR92PSaZ-w?si=TN_ZqBSk3vX1daVz"
+        ]
+    },
+    "Sachin": {
+        "password": "$2b$12$bpjARX8XW5UVfc9P6sFGa.TBPPfOdqH.LHNpzIiQw3MfBY187CihC",
+        "downloads": [
+            "https://youtu.be/mB0EBW-vDSQ?si=5isnDq822IrART1o",
+            "https://youtu.be/z0-gvGonin8?si=FR9ZKuNZr5gg9FYJ"
+        ]
+    },
+    "Dhruv Pathare": {
+        "password": "$2b$12$ss9UK5oBEw8ujqb.mxz.XemFNOxbwTGI1j4buPFBi3m7hh3OEWm6u",
+        "downloads": [
+            "https://youtu.be/czQtPwKnYJo?si=yHyYxsBmaMaoIUkD"
+        ]
+    },
+    "Aditya Gawade": {
+        "password": "$2b$12$zGKlj0.NWV5IzhsoKwTeFOGdkxpWbFHm17NQV2JABjugNJ228c6tW",
+        "downloads": [
+            "https://youtu.be/czQtPwKnYJo?si=yHyYxsBmaMaoIUkD"
+        ]
+    }
+}

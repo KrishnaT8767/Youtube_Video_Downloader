@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futuristic YouTube  Video Downloader</title>
+<style>
+body {
+  margin:0; padding:0;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:#fff; font-family:Arial,sans-serif;
+}
+main {
+  display:flex; flex-direction:column; align-items:center;
+  width:100%; max-width:900px; margin:20px auto; gap:20px;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  width:100%; background:rgba(255,255,255,0.08);
+  padding:20px; border-radius:12px;
+  display:flex; flex-direction:column; gap:15px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* ---------- Inputs ---------- */
+input {
+  width:100%; padding:12px;
+  background:rgba(255,255,255,0.1); color:#fff;
+  border:none; border-radius:8px;
+  transition:0.3s;
+}
+input:focus {
+  outline:none;
+  background:rgba(255,255,255,0.15);
+  box-shadow:0 0 8px #00c6ff;
+}
+
+/* ---------- Buttons ---------- */
+button {
+  padding:12px;
+  background:#00c6ff; color:#fff; cursor:pointer;
+  border:none; border-radius:8px; font-weight:bold;
+  transition:0.3s, transform 0.2s;
+}
+button:hover {
+  background:#0072ff;
+  transform:scale(1.05);
+}
+
+/* ---------- Links ---------- */
+a {
+  color:#ff512f; cursor:pointer; text-decoration:underline;
+  transition:0.3s;
+}
+a:hover { color:#dd2476; }
+
+/* ---------- Tables ---------- */
+table { width:100%; border-collapse:collapse; margin-top:10px; text-align:center; }
+th, td { padding:10px; border-bottom:1px solid rgba(255,255,255,0.2); }
+th { background:rgba(255,255,255,0.1); }
+.download-btn { padding:6px 12px; background:#ff512f; border-radius:6px; cursor:pointer; }
+.download-btn:hover { background:#dd2476; }
+
+/* ---------- Video Thumbnail ---------- */
+.video-preview img { width:200px; border-radius:10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h2 style="text-align:center;width:100%;">YouTube Video Downloader</h2>
+</header>
+
+<main>
+
+  <!-- ===== LOGIN PAGE ===== -->
+  <div class="card" id="loginPage">
+    <h2 style="text-align:center;">Login</h2>
+    <input type="text" id="loginUsername" placeholder="Username">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p style="text-align:center;margin-top:10px;">New user? <a onclick="showRegister()">Create a new account</a></p>
+    <div class="spinner" id="loginSpinner" style="display:none"></div>
+  </div>
+
+  <!-- ===== REGISTER PAGE ===== -->
+  <div class="card" id="registerPage" style="display:none;">
+    <h2 style="text-align:center;">Register</h2>
+    <input type="text" id="registerUsername" placeholder="Username">
+    <input type="password" id="registerPassword" placeholder="Password">
+    <button onclick="register()">Register</button>
+    <p style="text-align:center;margin-top:10px;">Already have an account? <a onclick="showLogin()">Back to Login</a></p>
+    <div class="spinner" id="registerSpinner" style="display:none"></div>
+  </div>
+
+  <!-- ===== DOWNLOADER PAGE ===== -->
+  <div id="downloader" style="display:none;flex-direction:column;gap:20px;width:100%;">
+    <div class="card">
+      <input type="text" id="url" placeholder="Paste YouTube URL">
+      <button onclick="fetchVideo()">Fetch Video Info</button>
+      <div class="spinner" id="spinner" style="display:none"></div>
+    </div>
+
+    <div class="card video-preview" id="videoPreview" style="display:none;">
+      <img id="thumb" src="">
+      <div>
+        <h3 id="title"></h3>
+        <p id="channel"></p>
+        <p id="duration"></p>
+      </div>
+      <table id="formatTable">
+        <thead>
+          <tr><th>Quality</th><th>Format</th><th>Action</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Download Queue</h3>
+      <table id="queueTable">
+        <thead><tr><th>Video</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card recent-downloads">
+      <h3>Recent Downloads</h3>
+      <ul id="recentList"></ul>
+    </div>
+
+    <div class="progress-container" id="progressContainer" style="display:none;">
+      <div class="progress-bar" id="progressBar" style="height:12px;width:0;background:#00c6ff;"></div>
+    </div>
+  </div>
+
+</main>
+
+<footer style="text-align:center;padding:10px;color:#ccc;">© 2025 YouTube Video Downloader</footer>
+
+<script>
+let currentUser = null;
+let queue = [];
+
+// ----- Page Switch -----
+function showLogin(){
+  document.getElementById('loginPage').style.display='block';
+  document.getElementById('registerPage').style.display='none';
+  document.getElementById('downloader').style.display='none';
+}
+function showRegister(){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('registerPage').style.display='block';
+  document.getElementById('downloader').style.display='none';
+}
+function showDownloader(){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('registerPage').style.display='none';
+  document.getElementById('downloader').style.display='flex';
+  updateRecent();
+}
+
+// ----- Login/Register -----
+async function login(){
+  const u=document.getElementById('loginUsername').value.trim();
+  const p=document.getElementById('loginPassword').value.trim();
+  if(!u||!p){ alert('Enter username and password'); return; }
+  const spinner=document.getElementById('loginSpinner'); spinner.style.display='block';
+  const res=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+  const data=await res.json(); spinner.style.display='none';
+  if(data.success){ currentUser=u; showDownloader(); } else alert(data.error);
+}
+
+async function register(){
+  const u=document.getElementById('registerUsername').value.trim();
+  const p=document.getElementById('registerPassword').value.trim();
+  if(!u||!p){ alert('Enter username and password'); return; }
+  const spinner=document.getElementById('registerSpinner'); spinner.style.display='block';
+  const res=await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+  const data=await res.json(); spinner.style.display='none';
+  if(data.success){ alert('Registered! Please login.'); showLogin(); document.getElementById('registerUsername').value=''; document.getElementById('registerPassword').value=''; } 
+  else alert(data.error);
+}
+
+// ----- Recent Downloads -----
+function updateRecent(){
+  const list=document.getElementById('recentList'); list.innerHTML='';
+  const recent=JSON.parse(localStorage.getItem('recentDownloads_'+currentUser)||'[]');
+  recent.slice(-5).reverse().forEach(url=>{
+    const li=document.createElement('li');
+    const a=document.createElement('a'); a.href=url; a.target='_blank'; a.textContent=url; li.appendChild(a); list.appendChild(li);
+  });
+}
+
+// ----- Fetch Video Info -----
+async function fetchVideo(){
+  const url=document.getElementById('url').value.trim();
+  if(!url){ alert('Enter URL'); return; }
+  const spinner=document.getElementById('spinner'); spinner.style.display='block';
+  try{
+    const infoRes=await fetch('/video_info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+    const info=await infoRes.json(); spinner.style.display='none';
+    if(info.error){ alert(info.error); return; }
+
+    document.getElementById('thumb').src=info.thumbnail;
+    document.getElementById('title').textContent=info.title;
+    document.getElementById('channel').textContent='By '+info.uploader;
+    document.getElementById('duration').textContent='Duration: '+Math.floor(info.duration/60)+':'+String(info.duration%60).padStart(2,'0');
+    document.getElementById('videoPreview').style.display='block';
+
+    const fmtRes=await fetch('/formats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+    const fmtData=await fmtRes.json();
+    if(fmtData.formats){
+      const tbody=document.querySelector('#formatTable tbody'); tbody.innerHTML='';
+      fmtData.formats.forEach(f=>{
+        const row=`<tr>
+          <td>${f.resolution}</td>
+          <td>${f.note || f.ext}</td>
+          <td><button class="download-btn" onclick="addToQueue('${url}','${f.format_id}')">Add to Queue</button></td>
+        </tr>`;
+        tbody.innerHTML+=row;
+      });
+    }
+  } catch(err){ spinner.style.display='none'; alert('Server error'); }
+}
+
+// ----- Download Queue -----
+function addToQueue(url, format_id){
+  const tbody=document.querySelector('#queueTable tbody');
+  const row=document.createElement('tr');
+  const titleText = document.getElementById('title').textContent;
+  row.innerHTML=`<td>${titleText} (${format_id})</td><td id="status">Queued</td><td><button onclick="removeRow(this)">Cancel</button></td>`;
+  tbody.appendChild(row);
+  queue.push({url,format_id,row});
+  processQueue();
+}
+
+function removeRow(btn){
+  const tr=btn.closest('tr');
+  const index=queue.findIndex(q=>q.row===tr);
+  if(index>-1) queue.splice(index,1);
+  tr.remove();
+}
+
+let downloading=false;
+async function processQueue(){
+  if(downloading||queue.length===0) return; downloading=true;
+  const item=queue.shift(); const status=item.row.querySelector('#status'); status.textContent='Downloading...';
+  const progressContainer=document.getElementById('progressContainer'); const progressBar=document.getElementById('progressBar');
+  progressContainer.style.display='block'; progressBar.style.width='0%';
+  try{
+    const res=await fetch('/download',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:item.url,format_id:item.format_id,username:currentUser})});
+    if(!res.ok){ status.textContent='Error'; downloading=false; processQueue(); return; }
+    const blob=await res.blob();
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); 
+    a.download='video.'+((item.format_id==='bestaudio')?'mp3':'mp4'); a.click();
+    status.textContent='Completed';
+    let recent=JSON.parse(localStorage.getItem('recentDownloads_'+currentUser)||'[]'); 
+    recent.push(item.url); localStorage.setItem('recentDownloads_'+currentUser,JSON.stringify(recent)); 
+    updateRecent();
+  } catch(e){ status.textContent='Error'; }
+  progressContainer.style.display='none'; downloading=false; processQueue();
+}
+
+// Show login on load
+showLogin();
+</script>
+
+</body>
+</html>
